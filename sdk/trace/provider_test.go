@@ -135,7 +135,7 @@ func TestRegisterAfterShutdownWithoutProcessors(t *testing.T) {
 
 	sp := &basicSpanProcessor{}
 	stp.RegisterSpanProcessor(sp) // no-op
-	assert.Empty(t, stp.spanProcessors.Load())
+	assert.Empty(t, stp.getSpanProcessors())
 }
 
 func TestRegisterAfterShutdownWithProcessors(t *testing.T) {
@@ -146,11 +146,11 @@ func TestRegisterAfterShutdownWithProcessors(t *testing.T) {
 	err := stp.Shutdown(context.Background())
 	assert.NoError(t, err)
 	assert.True(t, stp.isShutdown)
-	assert.Empty(t, stp.spanProcessors.Load())
+	assert.Empty(t, stp.getSpanProcessors())
 
 	sp2 := &basicSpanProcessor{}
 	stp.RegisterSpanProcessor(sp2) // no-op
-	assert.Empty(t, stp.spanProcessors.Load())
+	assert.Empty(t, stp.getSpanProcessors())
 }
 
 func TestTracerProviderSamplerConfigFromEnv(t *testing.T) {

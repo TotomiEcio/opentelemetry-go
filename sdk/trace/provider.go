@@ -168,7 +168,7 @@ func (p *TracerProvider) RegisterSpanProcessor(sp SpanProcessor) {
 		return
 	}
 	newSPS := spanProcessorStates{}
-	newSPS = append(newSPS, *(p.spanProcessors.Load())...)
+	newSPS = append(newSPS, p.getSpanProcessors()...)
 	newSPS = append(newSPS, newSpanProcessorState(sp))
 	p.spanProcessors.Store(&newSPS)
 }
@@ -180,7 +180,7 @@ func (p *TracerProvider) UnregisterSpanProcessor(sp SpanProcessor) {
 	if p.isShutdown {
 		return
 	}
-	old := *(p.spanProcessors.Load())
+	old := p.getSpanProcessors()
 	if len(old) == 0 {
 		return
 	}
@@ -215,7 +215,7 @@ func (p *TracerProvider) UnregisterSpanProcessor(sp SpanProcessor) {
 // ForceFlush immediately exports all spans that have not yet been exported for
 // all the registered span processors.
 func (p *TracerProvider) ForceFlush(ctx context.Context) error {
-	spss := *(p.spanProcessors.Load())
+	spss := p.getSpanProcessors()
 	if len(spss) == 0 {
 		return nil
 	}
@@ -243,7 +243,7 @@ func (p *TracerProvider) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	p.isShutdown = true
-	spss := *(p.spanProcessors.Load())
+	spss := p.getSpanProcessors()
 
 	var retErr error
 	for _, sps := range spss {
@@ -268,6 +268,10 @@ func (p *TracerProvider) Shutdown(ctx context.Context) error {
 	}
 	p.spanProcessors.Store(&spanProcessorStates{})
 	return retErr
+}
+
+func (p *TracerProvider) getSpanProcessors() spanProcessorStates {
+	return *(p.spanProcessors.Load())
 }
 
 // TracerProviderOption configures a TracerProvider.
